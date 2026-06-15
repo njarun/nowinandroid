@@ -17,6 +17,8 @@ of Android development by providing regular news updates.
 
 The app is currently in development. The `prodRelease` variant is [available on the Play Store](https://play.google.com/store/apps/details?id=com.google.samples.apps.nowinandroid).
 
+> **Trial fork note:** This `njarun/nowinandroid` fork carries a vertical-slice trial — a top-level **Stats** destination showing the count of available topics — used to validate the System Bring-Up delivery pipeline end-to-end. See PR #2.
+
 # Features
 
 **Now in Android** displays content from the
