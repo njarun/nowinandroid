@@ -2,20 +2,18 @@ name: ci
 on:
   pull_request:
     types: [labeled, synchronize, reopened]
-  workflow_dispatch: {}        # on-demand full ship build
+  workflow_dispatch: {}
 
 concurrency:
-  # same PR re-trigger cancels the in-flight run; different PRs => different
-  # groups => run in parallel up to runner-pool capacity
   group: ci-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: true            # same PR supersede; different PRs => parallel
 
 jobs:
   unit-gate:
     if: >
       github.event_name == 'pull_request' &&
       contains(github.event.pull_request.labels.*.name, 'ci:run')
-    runs-on: [self-hosted, light]      # on-demand triton slot, 3G cap
+    runs-on: [self-hosted, light]
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -26,7 +24,6 @@ jobs:
           mapfile -t paths < <(git diff --name-only "$base"...HEAD || true)
           declare -A seen; tasks=()
           for p in "${paths[@]}"; do
-            # "<a>/src/.." -> :a ; "<a>/<b>/src/.." -> :a:b   (tune for deeper modules)
             mod=$(printf '%s\n' "$p" \
               | sed -nE 's#^(([A-Za-z0-9_.-]+)(/[A-Za-z0-9_.-]+)?)/src/.*#\1#p' | tr '/' ':')
             [ -z "$mod" ] && continue
@@ -34,18 +31,15 @@ jobs:
             seen[$mod]=1
             tasks+=( ":$mod:testDemoDebugUnitTest" ":$mod:verifyRoborazziDemoDebug" )
           done
-          if [ ${#tasks[@]} -eq 0 ]; then
-            echo "tasks=" >> "$GITHUB_OUTPUT"
-          else
-            echo "tasks=${tasks[*]}" >> "$GITHUB_OUTPUT"
-          fi
+          if [ ${#tasks[@]} -eq 0 ]; then echo "tasks=" >> "$GITHUB_OUTPUT";
+          else echo "tasks=${tasks[*]}" >> "$GITHUB_OUTPUT"; fi
       - name: Unit + UI (JVM, changed modules)
         if: steps.mods.outputs.tasks != ''
         run: ./gradlew ${{ steps.mods.outputs.tasks }} --no-daemon --stacktrace
 
   ship-gate:
     if: github.event_name == 'workflow_dispatch'
-    runs-on: [self-hosted, ship]       # on-demand triton slot, 6.5G cap, runs alone
+    runs-on: [self-hosted, ship]
     steps:
       - uses: actions/checkout@v4
       - name: Full assemble + full suite
