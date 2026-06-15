@@ -1,0 +1,1 @@
+rails smoke probe at 2026-06-15T13:02:13+04:00
