@@ -17,4 +17,6 @@
 <resources>
     <string name="app_name">Now in Android</string>
     <string name="not_connected">⚠️ You aren’t connected to the internet</string>
+    <string name="app_stats_nav_title">Stats</string>
+    <string name="app_stats_topic_count_label">Available topics</string>
 </resources>
