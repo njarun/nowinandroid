@@ -6,14 +6,14 @@ on:
 
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true            # same PR supersede; different PRs => parallel
+  cancel-in-progress: true
 
 jobs:
   unit-gate:
     if: >
       github.event_name == 'pull_request' &&
       contains(github.event.pull_request.labels.*.name, 'ci:run')
-    runs-on: [self-hosted, light]
+    runs-on: [light]
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -39,7 +39,7 @@ jobs:
 
   ship-gate:
     if: github.event_name == 'workflow_dispatch'
-    runs-on: [self-hosted, ship]
+    runs-on: [ship]
     steps:
       - uses: actions/checkout@v4
       - name: Full assemble + full suite
